@@ -8,17 +8,21 @@ import {
   useNavigate
 } from "react-router-dom";
 import { app } from './firebase-config';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword ,setPersistence} from 'firebase/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   let navigate = useNavigate();
-  const handleAction = (id) => {
+
+   const handleAction = async (id) => {
     const authentication = getAuth();
+    const auth=getAuth()
     if (id === 1) {
-      signInWithEmailAndPassword(authentication, email, password)
+       await  setPersistence(auth,'LOCAL').then(()=>{ 
+         return signInWithEmailAndPassword(authentication, email, password)
         .then((response) => {
           navigate('/home')
           sessionStorage.setItem('Auth Token', response._tokenResponse.refreshToken)
@@ -32,7 +36,11 @@ function App() {
             toast.error('Please check the Email');
           }
         })
-    }
+        }).catch((error) => {
+          console.log('errr',error)
+        })
+  
+  }
     if (id === 2) {
       createUserWithEmailAndPassword(authentication, email, password)
         .then((response) => {
@@ -54,9 +62,11 @@ function App() {
       navigate('/home')
     }
   }, [])
+
   return (
     <div className="App">
       <>
+     
         <ToastContainer />
         <Routes>
           <Route
